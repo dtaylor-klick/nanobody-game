@@ -318,10 +318,6 @@ function resize() {
    BACKGROUND CANVAS (ambient particles)
 ══════════════════════════════════════════ */
 const bgPts = [];
-let bgImg = null;
-const _bgImage = new Image();
-_bgImage.onload = () => { bgImg = _bgImage; };
-_bgImage.src = 'background.svg';
 
 function initBg() {
   bgPts.length = 0;
@@ -339,24 +335,14 @@ function initBg() {
 function renderBg() {
   bgX.clearRect(0, 0, bgC.width, bgC.height);
 
-  if (bgImg) {
-    // Cover-fit the SVG: scale to fill, center
-    const iw = 400, ih = 800;
-    const scale = Math.max(bgC.width / iw, bgC.height / ih);
-    const dw = iw * scale, dh = ih * scale;
-    const dx = (bgC.width  - dw) / 2;
-    const dy = (bgC.height - dh) / 2;
-    bgX.drawImage(bgImg, dx, dy, dw, dh);
-  } else {
-    // Fallback: replicate SVG gradient in canvas
-    const g = bgX.createLinearGradient(bgC.width, 0, 0, bgC.height);
-    g.addColorStop(0,   '#043250');
-    g.addColorStop(0.72,'#290C05');
-    bgX.fillStyle = g;
-    bgX.fillRect(0, 0, bgC.width, bgC.height);
-  }
+  // Replicate the SVG background gradient natively — dark navy → dark brown (diagonal)
+  const g = bgX.createLinearGradient(bgC.width, 0, 0, bgC.height);
+  g.addColorStop(0,    '#043250');
+  g.addColorStop(0.72, '#290C05');
+  bgX.fillStyle = g;
+  bgX.fillRect(0, 0, bgC.width, bgC.height);
 
-  // Animated particles on top
+  // Animated particles
   bgPts.forEach(p => {
     p.x += p.vx; p.y += p.vy;
     if (p.x < -6) p.x = bgC.width + 6;
