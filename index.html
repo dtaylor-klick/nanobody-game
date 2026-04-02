@@ -228,7 +228,8 @@ const C = {
 
   // Scroll speed (px/frame at 60fps)
   P1_SPEED:   2.5,
-  P2_SPEED:   3.1,   // slightly faster after boost — feels more alive
+  P2_SPEED:   3.1,   // target speed after boost
+  P2_RAMP:    10,    // seconds to ramp from P1_SPEED to P2_SPEED after boost
 
   // Movement feel
   P1_ACCEL:   0.42,  // heavy, sluggish
@@ -238,11 +239,11 @@ const C = {
   MAX_VEL:    8,
 
   // Timing
-  BOOST_AT:   21,    // seconds before boost triggers
+  BOOST_AT:   16,    // seconds before boost triggers
 
   // Obstacles — spacing ramps from far → close over BOOST_AT seconds
   OBS_H:            18,   // bar height in px
-  OBS_SPACE_START: 230,   // wide spacing at the start
+  OBS_SPACE_START: 320,   // wide spacing at the start
   OBS_SPACE_END:   155,   // tight spacing by boost time
   OBS_DELAY:       1.6,   // seconds before first obstacle
 
@@ -275,6 +276,7 @@ function resetState() {
     startTime: 0,
     lastTs:    0,
     boostFlash:0,
+    boostTime: 0,    // S.elapsed when boost triggered
     touching:  false,
     touchX:    null,
     keyL:      false,
@@ -358,6 +360,13 @@ function p1Progress() {
   return Math.min(1, S.elapsed / C.BOOST_AT);
 }
 
+function currentSpeed() {
+  if (S.phase === 1) return C.P1_SPEED;
+  // Ramp gradually from P1_SPEED to P2_SPEED over P2_RAMP seconds post-boost
+  const t = Math.min(1, (S.elapsed - S.boostTime) / C.P2_RAMP);
+  return C.P1_SPEED + t * (C.P2_SPEED - C.P1_SPEED);
+}
+
 function spawnObstacle() {
   const gapW  = S.phase === 2
     ? C.P2_GAP
@@ -375,7 +384,7 @@ function spawnObstacle() {
 }
 
 function updateObstacles(dt) {
-  const spd = (S.phase === 2 ? C.P2_SPEED : C.P1_SPEED) * (dt / 16.667);
+  const spd = currentSpeed() * (dt / 16.667);
   S.obstacles.forEach(o => { o.y += spd; });
   S.obstacles = S.obstacles.filter(o => o.y < gc.height + 30);
 
@@ -399,19 +408,17 @@ function updatePlayer(dt) {
   const accel = S.phase === 2 ? C.P2_ACCEL : C.P1_ACCEL;
   const fric  = S.phase === 2 ? C.P2_FRIC  : C.P1_FRIC;
 
-  // Input: finger tracks toward touch X, proportional force
+  // Touch: set velocity directly from finger distance — zero buildup lag
   if (S.touching && S.touchX !== null) {
-    const dx   = S.touchX - S.px;
-    const norm = Math.min(Math.abs(dx), 80) / 80;
-    S.vx += Math.sign(dx) * norm * accel * f;
+    const dx  = S.touchX - S.px;
+    const spd = Math.min(Math.abs(dx) * 0.22, C.MAX_VEL);
+    S.vx = Math.sign(dx) * spd;
   } else {
-    if (S.keyL) S.vx -= accel * f;
-    if (S.keyR) S.vx += accel * f;
+    // Keyboard: high accel + friction for snappy feel
+    if (S.keyL) S.vx = Math.max(S.vx - accel * f * 4, -C.MAX_VEL);
+    if (S.keyR) S.vx = Math.min(S.vx + accel * f * 4,  C.MAX_VEL);
+    if (!S.keyL && !S.keyR) S.vx *= Math.pow(0.60, f); // quick stop on release
   }
-
-  // Friction and clamp
-  S.vx *= Math.pow(fric, f);
-  S.vx  = Math.max(-C.MAX_VEL, Math.min(C.MAX_VEL, S.vx));
 
   // Move
   S.px += S.vx * f;
@@ -453,6 +460,7 @@ function checkCollision() {
 function triggerBoost() {
   S.boosted     = true;
   S.phase       = 2;
+  S.boostTime   = S.elapsed;
   S.boostFlash  = 1.0;
 
   // HUD badge
@@ -620,7 +628,7 @@ function loop(ts) {
 
     if (!S.boosted && S.elapsed >= C.BOOST_AT) triggerBoost();
 
-    const spd  = (S.phase === 2 ? C.P2_SPEED : C.P1_SPEED) * (dt / 16.667);
+    const spd  = currentSpeed() * (dt / 16.667);
     S.scrolled  += spd;
     S.distance   = S.scrolled * C.DIST_SCALE;
     S.depthOff  += spd;
