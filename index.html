@@ -352,9 +352,9 @@ function renderBg() {
 let sprRegular = null, sprNano = null;
 
 function initSprites() {
-  // ── Phase 2 NanoBoost: single pill, blue→orange gradient ──
+  // ── Phase 2 NanoBoost: 3-bar pill cluster, blue→orange gradient ──
   sprRegular = document.createElement('canvas');
-  sprRegular.width  = 22;
+  sprRegular.width  = 56;
   sprRegular.height = 52;
   const rc  = sprRegular.getContext('2d');
   const rg  = rc.createLinearGradient(0, 0, 0, 52);
@@ -379,7 +379,8 @@ function initSprites() {
     rc.closePath();
     rc.fill();
   }
-  rcBar(0, 0, 22, 52);
+  const barW = 14, barH = 48, barGap = 5;
+  for (let i = 0; i < 3; i++) rcBar(i * (barW + barGap), 2, barW, barH);
 
   // ── Phase 1 Traditional Antibody: large IgG Y-shape, blue outline + dark fill ──
   sprNano = document.createElement('canvas');
@@ -596,8 +597,8 @@ function draw() {
   const W = gc.width, H = gc.height;
   ctx.clearRect(0, 0, W, H);
 
-  // Tunnel background — keep subtle dark tint so gameplay elements stay readable
-  ctx.fillStyle = 'rgba(10,4,0,0.30)';
+  // Tunnel background — dark enough for readability, light enough to see the SVG background
+  ctx.fillStyle = 'rgba(10,4,0,0.62)';
   ctx.fillRect(0, 0, W, H);
 
   // Scrolling depth lines — sense of motion
@@ -637,8 +638,8 @@ function draw() {
     const rightX = o.gapL + o.gapW;
     const rightW = W - C.WALL_W - rightX;
 
-    ctx.fillStyle   = 'rgba(244,237,216,0.14)';
-    ctx.strokeStyle = 'rgba(244,237,216,0.30)';
+    ctx.fillStyle   = 'rgba(244,237,216,0.22)';
+    ctx.strokeStyle = 'rgba(244,237,216,0.55)';
     ctx.lineWidth   = 1;
 
     if (leftW > 0)  { rrect(C.WALL_W, o.y, leftW,  C.OBS_H, 3); ctx.fill(); ctx.stroke(); }
