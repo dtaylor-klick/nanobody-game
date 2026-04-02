@@ -14,7 +14,7 @@
    SKIN TOKENS — change here to rebrand
 ══════════════════════════════════════════ */
 :root {
-  --bg:          #0E0600;
+  --bg:          #180B00;
   --panel:       rgba(22, 12, 4, 0.86);
   --border:      rgba(255, 200, 100, 0.10);
   --cream:       #F4EDD8;
@@ -37,12 +37,12 @@ html, body { width:100%; height:100%; background:var(--bg); overflow:hidden; tou
 
 /* ── Game view ── */
 #gw { position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; width:100%; height:100%; }
-#gc { display:block; border:1px solid rgba(255,200,100,0.08); }
+#gc { display:block; border:1px solid rgba(56,171,216,0.28); }
 
 /* ── HUD ── */
 #hud {
   position:absolute; top:0; left:0; right:0; z-index:10;
-  display:flex; justify-content:space-between; align-items:flex-start;
+  display:flex; justify-content:space-between; align-items:center;
   padding: max(env(safe-area-inset-top), 14px) 16px 0;
   pointer-events:none;
 }
@@ -58,6 +58,11 @@ html, body { width:100%; height:100%; background:var(--bg); overflow:hidden; tou
 #hs .hv { color:var(--orange); }
 #ht .hv { color:var(--cream); }
 #ht.warn .hv { color:var(--orange); }
+
+/* game wordmark */
+#game-logo { font-family:var(--fd); font-size:20px; font-weight:900; color:var(--cream); letter-spacing:.02em; text-align:center; margin-top:12px; margin-bottom:6px; opacity:0.55; pointer-events:all; cursor:pointer; transition:opacity .15s ease; }
+#game-logo:active { opacity:0.8; }
+#game-logo em { color:var(--orange); font-style:italic; }
 
 /* phase badge */
 #pb { position:absolute; top:0; left:50%; transform:translateX(-50%); padding-top: max(env(safe-area-inset-top),14px); pointer-events:none; z-index:10; }
@@ -210,7 +215,10 @@ h1 em { font-style:normal; color:var(--orange); }
   <div id="gw" style="display:none">
     <div id="hud">
       <div class="hp" id="hs"><span class="hl">Score</span><span class="hv" id="sv">0</span></div>
-      <div id="pb"><div id="pb-inner">Nanobody Boost</div></div>
+      <div id="pb">
+        <div id="game-logo">Nano<em>Quest</em></div>
+        <div id="pb-inner">Nanobody Boost</div>
+      </div>
       <div class="hp" id="ht"><span class="hl">Time</span><span class="hv" id="tv">2:00</span></div>
     </div>
     <canvas id="gc"></canvas>
@@ -276,8 +284,8 @@ const C = {
   DROP_P2_END:   380,    // ms/row at full ramp (reached after DROP_P2_RAMP seconds)
   DROP_P2_RAMP:  80,     // seconds over which phase 2 speed increases
   LOCK_MS:   420,
-  DAS_DELAY: 160,         // ms before auto-repeat
-  DAS_TICK:  55,          // ms between repeats
+  DAS_DELAY: 110,         // ms before auto-repeat
+  DAS_TICK:  38,          // ms between repeats
   PTS:      [0,100,300,600,1000],
   P2_MULT:   2,           // score multiplier in phase 2
   BR:        0.14,        // cell border-radius fraction
@@ -376,6 +384,8 @@ function initBg() {
 
 function renderBg() {
   bgX.clearRect(0, 0, bgC.width, bgC.height);
+  bgX.fillStyle = 'rgba(192,120,32,0.13)';
+  bgX.fillRect(0, 0, bgC.width, bgC.height);
   bgPts.forEach(p => {
     p.x += p.vx; p.y += p.vy;
     if (p.x < -6) p.x = bgC.width + 6;
@@ -387,8 +397,8 @@ function renderBg() {
     bgX.fill();
   });
   const g = bgX.createRadialGradient(bgC.width*.5, bgC.height*.5, bgC.height*.1, bgC.width*.5, bgC.height*.5, bgC.height*.9);
-  g.addColorStop(0, 'rgba(14,6,0,0)');
-  g.addColorStop(1, 'rgba(14,6,0,0.82)');
+  g.addColorStop(0, 'rgba(24,11,0,0)');
+  g.addColorStop(1, 'rgba(24,11,0,0.82)');
   bgX.fillStyle = g; bgX.fillRect(0, 0, bgC.width, bgC.height);
 }
 
@@ -833,6 +843,13 @@ document.addEventListener('keydown', e => {
    BUTTONS
 ══════════════════════════════════════════ */
 document.getElementById('b-start').addEventListener('click', startGame);
+document.getElementById('game-logo').addEventListener('click', () => {
+  if (S.scr !== 'game') return;
+  endGame();
+  es.classList.add('off');
+  ss.classList.remove('off');
+  S.scr = 'start';
+});
 document.getElementById('b-again').addEventListener('click', startGame);
 document.getElementById('b-learn').addEventListener('click', () => document.getElementById('learn-modal').classList.add('open'));
 document.getElementById('modal-close-btn').addEventListener('click', () => document.getElementById('learn-modal').classList.remove('open'));
