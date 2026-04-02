@@ -30,7 +30,7 @@
 }
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html, body { width:100%; height:100%; background: url('background.svg') center center / cover no-repeat; overflow:hidden; touch-action:none; font-family:var(--fb); color:var(--cream); }
+html, body { width:100%; height:100%; background:#040F1E; overflow:hidden; touch-action:none; font-family:var(--fb); color:var(--cream); }
 
 #app { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
 #bg-canvas { position:fixed; inset:0; pointer-events:none; z-index:0; }
@@ -318,6 +318,11 @@ function resize() {
    BACKGROUND CANVAS (ambient particles)
 ══════════════════════════════════════════ */
 const bgPts = [];
+let bgImg = null;
+const _bgImage = new Image();
+_bgImage.onload = () => { bgImg = _bgImage; };
+_bgImage.src = 'background.svg';
+
 function initBg() {
   bgPts.length = 0;
   for (let i = 0; i < 28; i++) bgPts.push({
@@ -333,7 +338,25 @@ function initBg() {
 
 function renderBg() {
   bgX.clearRect(0, 0, bgC.width, bgC.height);
-  // SVG handles the base background — only draw animated particles on top
+
+  if (bgImg) {
+    // Cover-fit the SVG: scale to fill, center
+    const iw = 400, ih = 800;
+    const scale = Math.max(bgC.width / iw, bgC.height / ih);
+    const dw = iw * scale, dh = ih * scale;
+    const dx = (bgC.width  - dw) / 2;
+    const dy = (bgC.height - dh) / 2;
+    bgX.drawImage(bgImg, dx, dy, dw, dh);
+  } else {
+    // Fallback: replicate SVG gradient in canvas
+    const g = bgX.createLinearGradient(bgC.width, 0, 0, bgC.height);
+    g.addColorStop(0,   '#043250');
+    g.addColorStop(0.72,'#290C05');
+    bgX.fillStyle = g;
+    bgX.fillRect(0, 0, bgC.width, bgC.height);
+  }
+
+  // Animated particles on top
   bgPts.forEach(p => {
     p.x += p.vx; p.y += p.vy;
     if (p.x < -6) p.x = bgC.width + 6;
@@ -597,8 +620,8 @@ function draw() {
   const W = gc.width, H = gc.height;
   ctx.clearRect(0, 0, W, H);
 
-  // Tunnel background — dark enough for readability, light enough to see the SVG background
-  ctx.fillStyle = 'rgba(10,4,0,0.62)';
+  // Light tint only — bg-canvas owns the background
+  ctx.fillStyle = 'rgba(10,4,0,0.28)';
   ctx.fillRect(0, 0, W, H);
 
   // Scrolling depth lines — sense of motion
