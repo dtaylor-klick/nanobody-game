@@ -30,7 +30,7 @@
 }
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html, body { width:100%; height:100%; background:rgba(192,120,32,0.10); overflow:hidden; touch-action:none; font-family:var(--fb); color:var(--cream); }
+html, body { width:100%; height:100%; background: url('background.svg') center center / cover no-repeat; overflow:hidden; touch-action:none; font-family:var(--fb); color:var(--cream); }
 
 #app { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
 #bg-canvas { position:fixed; inset:0; pointer-events:none; z-index:0; }
@@ -152,11 +152,11 @@ h1 em { font-style:normal; color:var(--orange); }
     <div class="eyebrow">BRAND O</div>
     <h1>Nano<em>Quest</em></h1>
     <div class="rule"></div>
-    <p class="sub">Size limits efficacy.<br>Precision changes outcomes.</p>
+    <p class="sub">Revolutionary nanobody technology is moving the bar in HS treatments.</p>
     <div class="btns">
       <button class="btn btn-p" id="b-start">Start</button>
     </div>
-    <p class="micro">Play for 30 seconds</p>
+    <p class="micro">See how far you can go.</p>
   </div>
 
   <!-- GAME -->
@@ -180,8 +180,7 @@ h1 em { font-style:normal; color:var(--orange); }
       <div class="stat-n" id="er">0m</div>
       <div class="stat-l">distance reached with nanobody precision.</div>
     </div>
-    <p class="tline">What smaller can do.</p>
-    <p class="tsub">Big can't get there.&nbsp; Small can.</p>
+    <p class="tline">Record-breaking depth.</p>
     <div class="btns">
       <button class="btn btn-p" id="b-again">Play Again</button>
       <button class="btn btn-s" id="b-learn">Learn More</button>
@@ -195,7 +194,7 @@ h1 em { font-style:normal; color:var(--orange); }
       <div class="modal-eyebrow">About BRAND O</div>
       <div class="modal-title">Precision is the point.</div>
       <p class="modal-body">
-        Placeholder copy goes here. This is where you'd explain the science, the brand, or the mechanism behind the therapy in two to three compelling sentences. Keep it tight, keep it visual, and make every word earn its place.
+        Next-generation nanobodies consist of one or more domains based on the small antigen-binding variable regions of heavy-chain-only antibodies (VHH). Nanobody technology has a number of advantages over traditional antibodies, including their small size and enhanced tissue penetration.
       </p>
       <button class="btn btn-p" id="modal-cta-btn">Explore the Science</button>
     </div>
@@ -204,8 +203,8 @@ h1 em { font-style:normal; color:var(--orange); }
   <!-- BOOST OVERLAY -->
   <div id="boost">
     <div class="boost-pill">
-      <div class="bp-top">Nanobody Boost Activated</div>
-      <div class="bp-body">Smaller size. Deeper reach.</div>
+      <div class="bp-top">NANOBOOST ACTIVATED</div>
+      <div class="bp-body">Reaching new depths</div>
     </div>
   </div>
 </div>
@@ -334,8 +333,7 @@ function initBg() {
 
 function renderBg() {
   bgX.clearRect(0, 0, bgC.width, bgC.height);
-  bgX.fillStyle = 'rgba(192,120,32,0.13)';
-  bgX.fillRect(0, 0, bgC.width, bgC.height);
+  // SVG handles the base background — only draw animated particles on top
   bgPts.forEach(p => {
     p.x += p.vx; p.y += p.vy;
     if (p.x < -6) p.x = bgC.width + 6;
@@ -346,11 +344,89 @@ function renderBg() {
     bgX.fillStyle = `hsla(${p.h},75%,58%,${p.a})`;
     bgX.fill();
   });
-  const g = bgX.createRadialGradient(bgC.width*.5, bgC.height*.5, bgC.height*.1, bgC.width*.5, bgC.height*.5, bgC.height*.9);
-  g.addColorStop(0, 'rgba(24,11,0,0)');
-  g.addColorStop(1, 'rgba(24,11,0,0.82)');
-  bgX.fillStyle = g; bgX.fillRect(0, 0, bgC.width, bgC.height);
 }
+
+/* ══════════════════════════════════════════
+   SPRITES — pre-rendered offscreen canvases
+══════════════════════════════════════════ */
+let sprRegular = null, sprNano = null;
+
+function initSprites() {
+  // ── Phase 2 NanoBoost: single pill, blue→orange gradient ──
+  sprRegular = document.createElement('canvas');
+  sprRegular.width  = 22;
+  sprRegular.height = 52;
+  const rc  = sprRegular.getContext('2d');
+  const rg  = rc.createLinearGradient(0, 0, 0, 52);
+  rg.addColorStop(0,   '#38ABD8');
+  rg.addColorStop(0.5, '#9060C8');
+  rg.addColorStop(1,   '#D04820');
+  rc.fillStyle   = rg;
+  rc.shadowColor = 'rgba(56,171,216,0.55)';
+  rc.shadowBlur  = 7;
+
+  function rcBar(x, y, w, h) {
+    const br = w / 2;
+    const dip = w * 0.34;
+    rc.beginPath();
+    rc.moveTo(x, y);
+    rc.quadraticCurveTo(x + w / 2, y + dip, x + w, y);
+    rc.lineTo(x + w, y + h - br);
+    rc.arcTo(x + w, y + h, x + w - br, y + h, br);
+    rc.lineTo(x + br, y + h);
+    rc.arcTo(x, y + h, x, y + h - br, br);
+    rc.lineTo(x, y);
+    rc.closePath();
+    rc.fill();
+  }
+  rcBar(0, 0, 22, 52);
+
+  // ── Phase 1 Traditional Antibody: large IgG Y-shape, blue outline + dark fill ──
+  sprNano = document.createElement('canvas');
+  sprNano.width  = 84;
+  sprNano.height = 96;
+  const nc = sprNano.getContext('2d');
+
+  function ncPill(cx, cy, w, h, angle) {
+    const r = Math.min(w, h) / 2;
+    nc.save();
+    nc.translate(cx, cy);
+    nc.rotate(angle);
+    nc.beginPath();
+    nc.moveTo(-w / 2 + r, -h / 2);
+    nc.lineTo( w / 2 - r, -h / 2);
+    nc.arcTo(  w / 2, -h / 2,  w / 2,  h / 2, r);
+    nc.lineTo( w / 2,  h / 2 - r);
+    nc.arcTo(  w / 2,  h / 2, -w / 2,  h / 2, r);
+    nc.lineTo(-w / 2 + r,  h / 2);
+    nc.arcTo( -w / 2,  h / 2, -w / 2, -h / 2, r);
+    nc.lineTo(-w / 2, -h / 2 + r);
+    nc.arcTo( -w / 2, -h / 2,  w / 2, -h / 2, r);
+    nc.closePath();
+    nc.fill();
+    nc.stroke();
+    nc.restore();
+  }
+
+  nc.fillStyle   = 'rgba(8,22,55,0.88)';
+  nc.strokeStyle = '#3AAFD4';
+  nc.lineWidth   = 2.8;
+  nc.shadowColor = 'rgba(56,171,216,0.75)';
+  nc.shadowBlur  = 7;
+
+  const cx = 42, pW = 16, pH = 28, arm = Math.PI / 4;
+  // Stem bottom → top
+  ncPill(cx,      82, pW, pH, 0);
+  ncPill(cx,      56, pW, pH, 0);
+  // Left arm
+  ncPill(cx - 16, 34, pW, pH, -arm);
+  ncPill(cx - 32, 14, pW, pH, -arm);
+  // Right arm
+  ncPill(cx + 16, 34, pW, pH,  arm);
+  ncPill(cx + 32, 14, pW, pH,  arm);
+}
+
+initSprites();
 
 /* ══════════════════════════════════════════
    OBSTACLE SYSTEM
@@ -520,8 +596,8 @@ function draw() {
   const W = gc.width, H = gc.height;
   ctx.clearRect(0, 0, W, H);
 
-  // Tunnel background
-  ctx.fillStyle = 'rgba(10,4,0,0.97)';
+  // Tunnel background — keep subtle dark tint so gameplay elements stay readable
+  ctx.fillStyle = 'rgba(10,4,0,0.30)';
   ctx.fillRect(0, 0, W, H);
 
   // Scrolling depth lines — sense of motion
@@ -580,23 +656,13 @@ function draw() {
     ctx.restore();
   });
 
-  // Player
-  const col = S.phase === 2 ? '#C2D430' : '#C07820';
-  const hw  = S.pw / 2, hh = C.P_H / 2;
-
+  // Player sprite — phase 1: antibody Y-shape, phase 2: single nano pill
+  const spr  = S.phase === 2 ? sprRegular : sprNano;
+  const glow = S.phase === 2 ? 'rgba(192,120,32,0.65)' : 'rgba(56,171,216,0.85)';
   ctx.save();
-  ctx.shadowColor = col;
-  ctx.shadowBlur  = S.phase === 2 ? 14 : 8;
-  ctx.fillStyle   = col;
-  rrect(S.px - hw, S.py - hh, S.pw, C.P_H, C.P_R);
-  ctx.fill();
-
-  // Highlight stripe
-  ctx.globalAlpha = 0.28;
-  ctx.shadowBlur  = 0;
-  ctx.fillStyle   = '#fff';
-  rrect(S.px - hw + 2, S.py - hh + 2, S.pw - 4, 5, 2);
-  ctx.fill();
+  ctx.shadowColor = glow;
+  ctx.shadowBlur  = S.phase === 2 ? 16 : 10;
+  ctx.drawImage(spr, Math.round(S.px - spr.width / 2), Math.round(S.py - spr.height / 2));
   ctx.restore();
 
   // Boost flash
@@ -693,6 +759,7 @@ document.addEventListener('touchmove', e => {
 
 document.addEventListener('touchend', e => {
   if (S.scr !== 'game') return;
+  if (e.target.closest('#pb')) return; // let HUD logo fire its click
   e.preventDefault();
   S.touching = false;
   S.touchX   = null;
