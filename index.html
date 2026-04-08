@@ -8,7 +8,7 @@
 <title>NanoQuest</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Playfair+Display:wght@700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ══════════════════════════════════════════
    SKIN TOKENS — change here to rebrand
@@ -59,9 +59,39 @@ html, body { width:100%; height:100%; background:#040F1E; overflow:hidden; touch
 #ht .hv { color:var(--cream); }
 
 /* game wordmark */
-#game-logo { font-family:var(--fd); font-size:20px; font-weight:900; color:var(--cream); letter-spacing:.02em; text-align:center; margin-top:12px; margin-bottom:6px; opacity:0.55; pointer-events:all; cursor:pointer; transition:opacity .15s ease; }
+#game-logo { display:flex; align-items:center; justify-content:center; margin-top:8px; margin-bottom:4px; opacity:0.55; pointer-events:all; cursor:pointer; transition:opacity .15s ease; }
 #game-logo:active { opacity:0.8; }
-#game-logo em { color:var(--orange); font-style:italic; }
+
+/* NanoQuest logo mark — shared by start screen + game HUD */
+.nq-logo { display:inline-flex; align-items:center; line-height:1; }
+.nq-logo-nano {
+  font-family:'Barlow Condensed', var(--fb); font-weight:800;
+  text-transform:uppercase; color:var(--cream); letter-spacing:-.01em;
+}
+.nq-logo-q {
+  display:inline-flex; align-items:center; justify-content:center;
+  border:0.1em solid var(--orange); border-radius:0.16em;
+  width:0.95em; height:1.05em; margin:0 0.04em; flex-shrink:0;
+}
+.nq-logo-q-pill {
+  display:block; width:0.32em; height:0.58em;
+  background:var(--cream); border-radius:50%;
+}
+.nq-logo-uest {
+  font-family:'Barlow Condensed', var(--fb); font-weight:800;
+  text-transform:uppercase; color:var(--orange); letter-spacing:-.01em;
+}
+.nq-logo-sub {
+  font-family:var(--fb); font-weight:600; text-transform:uppercase;
+  color:var(--cream); text-align:right; line-height:1.25;
+  letter-spacing:.12em; align-self:flex-end;
+}
+
+/* start screen logo sizing */
+#ss-logo { width:clamp(240px,65vw,420px); height:auto; margin-bottom:18px; display:block; }
+
+/* game HUD logo sizing */
+#game-logo img { width:120px; height:auto; display:block; }
 
 /* phase badge (nanobody boost label) */
 #pb { position:absolute; top:0; left:50%; transform:translateX(-50%); padding-top: max(env(safe-area-inset-top),14px); pointer-events:none; z-index:10; }
@@ -116,7 +146,7 @@ h1 em { font-style:normal; color:var(--orange); }
 .modal-backdrop.open .modal-box { transform:translateY(0); }
 .modal-eyebrow { font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:var(--orange); font-family:var(--fb); font-weight:700; margin-bottom:10px; }
 .modal-title { font-size:clamp(20px,5vw,24px); font-weight:900; font-family:var(--fd); color:var(--cream); line-height:1.15; margin-bottom:14px; }
-.modal-body { font-size:13px; line-height:1.7; color:var(--muted); margin-bottom:24px; }
+.modal-body { font-size:13px; line-height:1.7; color:var(--muted); margin-bottom:24px; text-align:center; }
 .modal-close { position:absolute; top:14px; right:16px; background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; line-height:1; padding:4px; }
 .modal-close:hover { color:var(--cream); }
 
@@ -150,7 +180,7 @@ h1 em { font-style:normal; color:var(--orange); }
   <!-- START — preserved exactly -->
   <div class="scr" id="ss">
     <div class="eyebrow">BRAND O</div>
-    <h1>Nano<em>Quest</em></h1>
+    <img id="ss-logo" src="nanoquest-logo.png" alt="NanoQuest — Make Your Move on HS">
     <div class="rule"></div>
     <p class="sub">Revolutionary nanobody technology is moving the bar in HS treatments.</p>
     <div class="btns">
@@ -164,7 +194,7 @@ h1 em { font-style:normal; color:var(--orange); }
     <div id="hud">
       <div class="hp" id="hs"><span class="hl">Distance</span><span class="hv" id="sv">0</span></div>
       <div id="pb">
-        <div id="game-logo">Nano<em>Quest</em></div>
+        <div id="game-logo"><img src="nanoquest-logo.png" alt="NanoQuest"></div>
         <div id="pb-inner">Nanobody Boost</div>
       </div>
       <div class="hp" id="ht"><span class="hl">Time</span><span class="hv" id="tv">0:00</span></div>
@@ -180,7 +210,7 @@ h1 em { font-style:normal; color:var(--orange); }
       <div class="stat-n" id="er">0m</div>
       <div class="stat-l">distance reached with nanobody precision.</div>
     </div>
-    <p class="tline">Record-breaking depth.</p>
+    <p class="tline">Inflammation won this round.</p>
     <div class="btns">
       <button class="btn btn-p" id="b-again">Play Again</button>
       <button class="btn btn-s" id="b-learn">Learn More</button>
@@ -200,6 +230,18 @@ h1 em { font-style:normal; color:var(--orange); }
     </div>
   </div>
 
+  <!-- INTRO POPUP -->
+  <div class="modal-backdrop" id="intro-modal">
+    <div class="modal-box">
+      <div class="modal-eyebrow">Before You Play</div>
+      <div class="modal-title">Inflammation is hiding deep.</div>
+      <p class="modal-body">
+        Inflammation has taken hold — but it's hiding deep within tissue that most treatments can't reach. You'll start with a traditional antibody, but its size may limit how far it can penetrate. Unlock nanobody technology — a fraction of the size, with the power to target the IL-17 pathway like nothing else can.
+      </p>
+      <button class="btn btn-p" id="intro-play-btn">Play Now</button>
+    </div>
+  </div>
+
   <!-- BOOST OVERLAY -->
   <div id="boost">
     <div class="boost-pill">
@@ -216,7 +258,7 @@ h1 em { font-style:normal; color:var(--orange); }
 const C = {
   // Player
   P1_W:       84,    // phase 1 width — large, constrained (50% bigger)
-  P2_W:       24,    // phase 2 width — small, precise (3.5x smaller than P1)
+  P2_W:       18,    // phase 2 width — small, precise (25% smaller than before)
   P_H:        20,    // player height (both phases)
   P_R:         5,    // corner radius
 
@@ -238,7 +280,7 @@ const C = {
   MAX_VEL:    8,
 
   // Timing
-  BOOST_AT:   16,    // seconds before boost triggers
+  BOOST_AT:   12,    // seconds before boost triggers (25% sooner)
 
   // Obstacles — spacing ramps from far → close over BOOST_AT seconds
   OBS_H:            18,   // bar height in px
@@ -790,7 +832,14 @@ document.addEventListener('keyup', e => {
 /* ══════════════════════════════════════════
    EVENT LISTENERS
 ══════════════════════════════════════════ */
-document.getElementById('b-start').addEventListener('click', startGame);
+const introModal = document.getElementById('intro-modal');
+document.getElementById('b-start').addEventListener('click', () => {
+  introModal.classList.add('open');
+});
+document.getElementById('intro-play-btn').addEventListener('click', () => {
+  introModal.classList.remove('open');
+  startGame();
+});
 document.getElementById('b-again').addEventListener('click', startGame);
 
 document.getElementById('game-logo').addEventListener('click', () => {
