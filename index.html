@@ -210,7 +210,7 @@ h1 em { font-style:normal; color:var(--orange); }
       <div class="stat-n" id="er">0m</div>
       <div class="stat-l">distance reached with nanobody precision.</div>
     </div>
-    <p class="tline">Inflammation won this round.</p>
+    <p class="tline" id="tline">Inflammation won this round.</p>
     <div class="btns">
       <button class="btn btn-p" id="b-again">Play Again</button>
       <button class="btn btn-s" id="b-learn">Learn More</button>
@@ -785,6 +785,13 @@ function endGame() {
   if (!S.running) return;
   S.running = false;
   S.scr     = 'end';
+
+  const tline = document.getElementById('tline');
+  if (S.phase === 2) {
+    tline.textContent = 'Record-breaking depth';
+  } else {
+    tline.textContent = 'Inflammation won this round.';
+  }
 
   gw.style.display = 'none';
   er.textContent   = Math.floor(S.distance) + 'm';
